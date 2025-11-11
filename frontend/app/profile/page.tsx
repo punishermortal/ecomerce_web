@@ -4,12 +4,50 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import api from '@/lib/axios'
+import axios from 'axios'
+import Cookies from 'js-cookie'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/store/store'
 import { setUser } from '@/store/slices/authSlice'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+
+// Create axios instance with interceptors
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Add request interceptor for authentication
+api.interceptors.request.use(
+  (config) => {
+    const token = Cookies.get('access_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      Cookies.remove('access_token')
+      Cookies.remove('refresh_token')
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
 
 interface UserProfile {
   id: number
