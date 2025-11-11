@@ -46,10 +46,16 @@ export default function ProductsPage() {
       if (selectedCategory) params.category = selectedCategory
       if (searchQuery) params.search = searchQuery
       
+      console.log('Fetching products from:', `${API_URL}/products/`, 'with params:', params)
       const response = await axios.get(`${API_URL}/products/`, { params })
-      setProducts(response.data.results || response.data)
-    } catch (error) {
+      console.log('Products response:', response.data)
+      const productsData = response.data.results || response.data || []
+      setProducts(Array.isArray(productsData) ? productsData : [])
+    } catch (error: any) {
       console.error('Error fetching products:', error)
+      console.error('Error details:', error.response?.data || error.message)
+      console.error('Error status:', error.response?.status)
+      setProducts([])
     } finally {
       setLoading(false)
     }
@@ -57,12 +63,16 @@ export default function ProductsPage() {
 
   const fetchCategories = async () => {
     try {
+      console.log('Fetching categories from:', `${API_URL}/products/categories/`)
       const response = await axios.get(`${API_URL}/products/categories/`)
+      console.log('Categories response:', response.data)
       // Categories are not paginated, so response.data is directly the array
       const categoriesData = response.data.results || response.data || []
       setCategories(Array.isArray(categoriesData) ? categoriesData : [])
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching categories:', error)
+      console.error('Error details:', error.response?.data || error.message)
+      console.error('Error status:', error.response?.status)
       setCategories([]) // Set empty array on error
     }
   }

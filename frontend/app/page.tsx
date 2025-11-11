@@ -35,10 +35,19 @@ export default function Home() {
 
   const fetchFeaturedProducts = async () => {
     try {
+      console.log('Fetching featured products from:', `${API_URL}/products/featured/`)
       const response = await axios.get(`${API_URL}/products/featured/`)
-      setFeaturedProducts(response.data.slice(0, 8))
-    } catch (error) {
+      console.log('Featured products response:', response.data)
+      if (Array.isArray(response.data)) {
+        setFeaturedProducts(response.data.slice(0, 8))
+      } else {
+        console.error('Invalid featured products response:', response.data)
+        setFeaturedProducts([])
+      }
+    } catch (error: any) {
       console.error('Error fetching featured products:', error)
+      console.error('Error details:', error.response?.data || error.message)
+      setFeaturedProducts([])
     } finally {
       setLoading(false)
     }
@@ -46,13 +55,16 @@ export default function Home() {
 
   const fetchCategories = async () => {
     try {
+      console.log('Fetching categories from:', `${API_URL}/products/categories/`)
       const response = await axios.get(`${API_URL}/products/categories/`)
+      console.log('Categories response:', response.data)
       // Categories are not paginated, so response.data is directly the array
       const categoriesData = response.data.results || response.data || []
       const categoriesArray = Array.isArray(categoriesData) ? categoriesData : []
       setCategories(categoriesArray.slice(0, 6))
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching categories:', error)
+      console.error('Error details:', error.response?.data || error.message)
       setCategories([]) // Set empty array on error
     }
   }
