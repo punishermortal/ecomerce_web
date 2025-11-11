@@ -191,15 +191,26 @@ upstream django {
     server 127.0.0.1:8000;
 }
 
+upstream nextjs {
+    server 127.0.0.1:3000;
+}
+
 # Frontend
 server {
     listen 80;
     server_name 21.2.23.24 yourdomain.com;
 
-    # Frontend
+    # Frontend (Next.js as server)
     location / {
-        root /var/www/nextbloom/frontend/out;
-        try_files $uri $uri/ /index.html;
+        proxy_pass http://nextjs;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
 
     # Backend API
@@ -266,6 +277,46 @@ sudo systemctl enable nextbloom
 sudo systemctl start nextbloom
 sudo systemctl status nextbloom
 ```
+
+## Systemd Service for Next.js
+
+### 1. Create Service File
+
+```bash
+sudo nano /etc/systemd/system/nextbloom-frontend.service
+```
+
+Add:
+
+```ini
+[Unit]
+Description=NextBloom Next.js Application
+After=network.target
+
+[Service]
+User=xyzxtz
+Group=xyzxtz
+WorkingDirectory=/var/www/nextbloom/frontend
+Environment="PATH=/usr/bin:/usr/local/bin"
+Environment="NODE_ENV=production"
+Environment="NEXT_PUBLIC_API_URL=http://21.2.23.24/api"
+ExecStart=/usr/bin/npm start
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### 2. Start Service
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable nextbloom-frontend
+sudo systemctl start nextbloom-frontend
+sudo systemctl status nextbloom-frontend
+```
+
+**Note**: For development, you can skip this and just run `npm run dev`. This service is only needed for production.
 
 ## Jenkins Setup
 

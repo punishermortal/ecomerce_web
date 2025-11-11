@@ -77,6 +77,7 @@ pipeline {
                     echo 'Restarting services...'
                     sh """
                         sudo systemctl restart nextbloom || true
+                        sudo systemctl restart nextbloom-frontend || true
                         sudo systemctl restart nginx || true
                         sleep 3
                     """

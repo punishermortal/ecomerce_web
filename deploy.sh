@@ -86,6 +86,7 @@ npm run build
 # Restart services
 print_status "Restarting services..."
 sudo systemctl restart nextbloom || print_warning "Failed to restart nextbloom service"
+sudo systemctl restart nextbloom-frontend || print_warning "Failed to restart nextbloom-frontend service (may not exist in dev)"
 sudo systemctl restart nginx || print_warning "Failed to restart nginx"
 sleep 3
 
