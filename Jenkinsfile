@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_DIR = "/home/nbgecdpsvr/nextbloom_jen"
+        PROJECT_DIR = "${WORKSPACE}"
         BACKEND_DIR = "${PROJECT_DIR}/backend"
         FRONTEND_DIR = "${PROJECT_DIR}/frontend"
         VENV_DIR = "${PROJECT_DIR}/env"
@@ -10,9 +10,10 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
-                git branch: 'main', credentialsId: 'github-ssh', url: 'git@github.com:punishermortal/ecomerce_web.git'
+                git branch: 'main', credentialsId: 'nextbloom_ssh', url: 'git@github.com:punishermortal/ecomerce_web.git'
             }
         }
 
@@ -43,7 +44,7 @@ pipeline {
             steps {
                 sh '''
                 cd $FRONTEND_DIR
-                npm run dev &
+                nohup npm run dev > frontend.log 2>&1 &
                 '''
             }
         }
